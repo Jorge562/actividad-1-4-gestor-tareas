@@ -7,6 +7,7 @@ function App() {
  const [error, setError] = useState('');
  const [success, setSuccess] = useState('');
  const [tasks, setTasks] = useState([]);
+const [pendingCount, setPendingCount] = useState(0);
  const [statusFilter, setStatusFilter] = useState('');
  const [editingId, setEditingId] = useState(null);
  const [editTitle, setEditTitle] = useState('');
@@ -62,12 +63,16 @@ function App() {
 
  const loadTasks = async (status = '') => {
  try {
- const data = await api.getTasks(status);
+ const [data, pendingData] = await Promise.all([
+ api.getTasks(status),
+ api.getTasks('pendiente')
+ ]);
  setTasks(data.tasks);
+ setPendingCount(pendingData.tasks.length);
  } catch (err) {
  setError(err.message || 'Error al cargar tareas');
  }
- };
+};
 
  const handleCreate = async (e) => {
  e.preventDefault();
@@ -173,7 +178,14 @@ function App() {
  </select>
  <button onClick={() => loadTasks(statusFilter)} style={{ padding: '6px 12px', cursor: 'pointer' }}>Refrescar</button>
  </div>
-
+ <div style={{
+ background: '#e8f4ff',
+ padding: 12,
+ marginBottom: 15,
+ borderRadius: 6
+}}>
+ <strong>Tareas pendientes: {pendingCount}</strong>
+</div>
  {/* Listado tareas */}
  {tasks.length === 0 && <p>No hay tareas</p>}
  {tasks.map(task => (
